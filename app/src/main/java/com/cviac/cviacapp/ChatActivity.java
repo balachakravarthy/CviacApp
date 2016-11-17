@@ -9,9 +9,14 @@ import java.util.List;
 import com.cviac.adapter.ChatMessageAdapter;
 import com.cviac.adapter.ColleguesAdapter;
 import com.cviac.datamodel.ChatMessage;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.view.LayoutInflater;
@@ -20,12 +25,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.os.Build;
+import android.content.Context;
 
 public class ChatActivity extends Activity {
 	static EditText sendedit;
@@ -34,47 +41,101 @@ public class ChatActivity extends Activity {
 	static ActionBar mActionBar;
 	private List<ChatMessage> chats;
 	private ChatMessageAdapter chatAdapter;
+	/**
+	 * ATTENTION: This was auto-generated to implement the App Indexing API.
+	 * See https://g.co/AppIndexing/AndroidStudio for more information.
+	 */
+	private GoogleApiClient client;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_chat);
-		
-		ListView lv=(ListView)findViewById(R.id.listViewChat);
+
+		ListView lv = (ListView) findViewById(R.id.listViewChat);
 		chats = new ArrayList<ChatMessage>();
-		chatAdapter = new ChatMessageAdapter(chats,this);
+		chatAdapter = new ChatMessageAdapter(chats, this);
 		lv.setDivider(null);
-	    lv.setAdapter(chatAdapter);
+		lv.setAdapter(chatAdapter);
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction().add(R.id.container, new PlaceholderFragment()).commit();
 		}
-		final EditText msgview=(EditText)findViewById(R.id.editTextsend);
-		final ImageButton b = (ImageButton)findViewById(R.id.sendbutton);
+		final EditText msgview = (EditText) findViewById(R.id.editTextsend);
+		final ImageButton b = (ImageButton) findViewById(R.id.sendbutton);
 
 		b.setOnClickListener(new OnClickListener() {
 
-	@Override
-	public void onClick(View v) {
-		
-			String msg=msgview.getText().toString();
-			if(msg.length()!=0)
-			{
-			ChatMessage mgsopj=new ChatMessage();
-			mgsopj.setMsg(msg);
-			mgsopj.setIn(false);
-			mgsopj.setCtime(new Date());
-			chats.add(mgsopj);
-			msgview.getText().clear();
-			chatAdapter.notifyDataSetChanged();
+			@Override
+			public void onClick(View v) {
+
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+				imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+
+				String msg = msgview.getText().toString();
+				if (msg.length() != 0) {
+					ChatMessage mgsopj = new ChatMessage();
+					mgsopj.setMsg(msg);
+					mgsopj.setIn(false);
+					mgsopj.setCtime(new Date());
+					chats.add(mgsopj);
+					msgview.getText().clear();
+					chatAdapter.notifyDataSetChanged();
+				}
+
 			}
-		
+		});
+		msgview.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    // Hide soft keyboard.
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(msgview.getWindowToken(), 0);
+                    // Make it non-editable again.
+                    msgview.setKeyListener(null);
+                }
+            }
+        });
+		// ATTENTION: This was auto-generated to implement the App Indexing API.
+		// See https://g.co/AppIndexing/AndroidStudio for more information.
+		client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 	}
-});
+
+	/**
+	 * ATTENTION: This was auto-generated to implement the App Indexing API.
+	 * See https://g.co/AppIndexing/AndroidStudio for more information.
+	 */
+	public Action getIndexApiAction() {
+		Thing object = new Thing.Builder()
+				.setName("Chat Page") // TODO: Define a title for the content shown.
+				// TODO: Make sure this auto-generated URL is correct.
+				.setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+				.build();
+		return new Action.Builder(Action.TYPE_VIEW)
+				.setObject(object)
+				.setActionStatus(Action.STATUS_TYPE_COMPLETED)
+				.build();
 	}
-	
 
+	@Override
+	public void onStart() {
+		super.onStart();
 
+		// ATTENTION: This was auto-generated to implement the App Indexing API.
+		// See https://g.co/AppIndexing/AndroidStudio for more information.
+		client.connect();
+		AppIndex.AppIndexApi.start(client, getIndexApiAction());
+	}
 
+	@Override
+	public void onStop() {
+		super.onStop();
+
+		// ATTENTION: This was auto-generated to implement the App Indexing API.
+		// See https://g.co/AppIndexing/AndroidStudio for more information.
+		AppIndex.AppIndexApi.end(client, getIndexApiAction());
+		client.disconnect();
+	}
 
 
 	/**
